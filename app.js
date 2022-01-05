@@ -3,11 +3,14 @@ const http = require("http");
 
 var indexRouter = require('./routes/index');
 
+
 const port = process.argv[2];
 const app = express();
 
-//app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + "/public"));
 app.use('/', indexRouter);
+
+
 http.createServer(app).listen(port);
 
 
