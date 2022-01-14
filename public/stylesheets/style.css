@@ -1,8 +1,49 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+:root {
+  --darkBG: #110066;
+  --lightBG: #90CBFB; 
+  --text: #90CBFB;
+  --lightHighlight: #919191;
+  --darkHighlight: #FFD432;
+  --buttonHover: black;
+}
+
+html,
+body,
+main {
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  background-color: var(--darkBG);
+  letter-spacing: 4px;
 }
 
 a {
-  color: #00B7FF;
+  background-color: var(--lightBG);
+  color: var(--text);
+  text-decoration: underline overline;
+}
+
+a:hover {
+  background-color: var(--buttonHover);
+}
+
+
+/*
+ * Minimum width/height for this game is 800px x 800px
+ */
+@media (max-width: 799px), (max-height: 799px) {
+  body::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+    color: greenyellow;
+    padding: 20px;
+    content: "Your window is too small (at least 800x800px is expected) to play this game. Enlarge the browser window or zoom out to play or disable the CSS @media query.";
+    background-color: black;
+    z-index: 100;
+  }
 }

@@ -1,0 +1,96 @@
+@import "style.css";
+
+main {
+  display: grid;
+  grid-template-columns: 60vw 40vw;
+  grid-template-rows: 0.5fr 0.5fr 100px;
+  box-sizing: border-box;
+  color: var(--text);
+  font-family: 'Bungee Shade', cursive;
+
+}
+
+.centerXY {
+  /* we are cheating a bit here: within CSS grid the horizontal and vertical
+     alignment of text is not easy; flex is a display type that handles this
+     easily 
+  */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-basis: 100%;
+}
+
+.justify {
+  display: flex;
+  justify-content: center;
+}
+
+#game {
+  grid-row: 1/4;
+  background-color: var(--lightBG);
+  display: grid;
+  grid-template-columns: repeat(6, 8vw);
+  grid-template-rows: repeat(5, 17vh);
+  gap: 20px;
+  padding-top: 10px;
+  box-sizing: border-box;
+  border-right: 5px dashed var(--lightHighlight);
+}
+
+.letter {
+  background-color: var(--darkHighlight);
+  border: 5px solid white;
+  border-radius: 10px;
+  font-size: 250%;
+  padding-left: 10px;
+  box-shadow: 20px 20px 10px -10px rgba(31, 31, 31, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.letter:hover {
+  box-shadow: none;
+  background-color: var(--lightHighlight);
+}
+
+.letter.disabled {
+  border: 2px solid #bbb;
+  background-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+#balloons {
+  background-color: var(--darkBG);
+  display: grid;
+  gap: 10px;
+}
+
+#word {
+  background-color: var(--darkBG);
+  
+  /* adaptive font-size source: https://css-tricks.com/simplified-fluid-typography/ */
+  font-size: clamp( 32px, 4vw, 64px );
+  
+  border-bottom: 5px dashed var(--darkHighlight);
+}
+
+#status {
+  background-color: var(--lightHighlight);
+  font-family: monaco, Bitstream Vera Sans Mono, monospace;
+  font-size: 100%;
+  padding: 10px;
+}
+
+.balloon {
+  border-radius: 50%;
+  border: 3px dashed var(--darkHighlight);
+  transition: opacity 2s;
+}
+
+.balloonGone {
+  transition: opacity 2s;
+  opacity: 0;
+}
