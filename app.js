@@ -29,17 +29,24 @@ let connectionID = 0; //each websocket receives a unique ID
 wss.on("connection", function (ws) {
   const con = ws;
   con["id"] = connectionID++;
-  const playerType = currentGame.addPlayer(con);
+  const playerNumber = currentGame.addPlayer(con);
+
+  gameStatus.onlinePlayers++;
   websockets[con["id"]] = currentGame;
 
   console.log(
-    `Player ${con["id"]} placed in game ${currentGame.id} as ${playerType}`
+    `Player ${con["id"]} placed in game ${currentGame.id} as ${playerNumber}`
   );
 
-  con.send(playerType == "A" ? messages.S_PLAYER_A : messages.S_PLAYER_B);
-
-
   if (currentGame.hasTwoConnectedPlayers()) {
+    currentGame.shuffleImages();
+    const mess = {
+      type: "setImages",
+      images: currentGame.getImages()
+    }
+    currentGame.player1.send(JSON.stringify(mess));
+    currentGame.player2.send(JSON.stringify(mess));
+    
     currentGame = new Game(gameStatus.gamesInitialized++);
   }
 
@@ -78,6 +85,45 @@ wss.on("connection", function (ws) {
         gameObj.setStatus(oMsg.data);
         //game was won by somebody, update statistics
         gameStatus.gamesCompleted++;
+      }
+    }
+  });
+
+  con.on("close", function(code) {
+    /*
+     * code 1001 means almost always closing initiated by the client;
+     * source: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent
+     */
+    gameStatus.onlinePlayers--;
+    console.log(`${con["id"]} disconnected ...`);
+
+    if (code == 1001) {
+      /*
+       * if possible, abort the game; if not, the game is already completed
+       */
+      const gameObj = websockets[con["id"]];
+
+      if (gameObj.isValidTransition(gameObj.gameState, "ABORTED")) {
+        gameObj.setStatus("ABORTED");
+        gameStatus.gamesAborted++;
+
+        /*
+         * determine whose connection remains open;
+         * close it
+         */
+        try {
+          gameObj.playerA.close();
+          gameObj.playerA = null;
+        } catch (e) {
+          console.log("Player A closing: " + e);
+        }
+
+        try {
+          gameObj.playerB.close();
+          gameObj.playerB = null;
+        } catch (e) {
+          console.log("Player B closing: " + e);
+        }
       }
     }
   });

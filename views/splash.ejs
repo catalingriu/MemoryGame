@@ -9,27 +9,13 @@
   </head>
   <body>
 
-      
-            Status: <span id="hello"></span>
-
-            <!-- Poor coding standard, only for demonstration purposes.
-                    JavaScript code should not be part of HTML documents.
-                -->
-            <script>
-            const target = document.getElementById("hello");
-            const socket = new WebSocket("ws://localhost:3000");
-            socket.onmessage = function (event) {
-                target.innerHTML = event.data;
-            };
-
-            // socket.onopen = function () {
-            //     socket.send("Hello from the client!");
-            //     target.innerHTML = "Sending a first message to the server ...";
-            // };
-            </script>
-            
+        <img src="images/noun-owl-665899.png" alt="Logo">
+                       
         <h1>MemoryGame</h1>
-        <h2>A two player memory game</h2>
+        <h3>
+            <%= onlinePlayers %>
+            in game players
+        </h3>
         <h3><%= gamesInitialized %> 
             <%if (gamesInitialized != 1) { %>
                 games
@@ -45,6 +31,8 @@
             <button type="submit">PLAY</button>
           </form>
     
+        <p>Description: Memory Game can improve your brain functions, such as attention, concentration, and focus. Memory Game gives space to critical thinking and that helps children nurture their attention to detail. It can also improve visual recognition.
+        </p>
     </main>
   </body>
 </html>

@@ -1,19 +1,78 @@
 //@ts-check
 
 const websocket = require("ws");
+const { report } = require("./routes");
+
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
 
 /**
  * Game constructor. Every game has two players, identified by their WebSocket.
  * @param {number} gameID every game has a unique game identifier.
  */
 const game = function(gameID) {
-  this.playerA = null;
-  this.playerB = null;
+  this.player1 = null;
+  this.player2 = null;
   this.id = gameID;
-  this.wordToGuess = null; //first player to join the game, can set the word
   this.gameState = "0 JOINT"; //"A" means A won, "B" means B won, "ABORTED" means the game was aborted
+  this.images = null;
 };
 
+game.prototype.shuffleImages = function() {
+  const images = ["library.jpg",
+  "library.jpg",
+  "eemc.jpg",
+  "eemc.jpg",
+  "architecture.jpg",
+  "architecture.jpg",
+  "library2.jpg",
+  "library2.jpg",
+  "civileng.jpg",
+  "civileng.jpg",
+  "aula.png",
+  "aula.png",
+  "aero.jfif",
+  "aero.jfif",
+  "aero2.jfif",
+  "aero2.jfif",
+  "mechanical.jpg",
+  "mechanical.jpg",
+  "pulse.jfif",
+  "pulse.jfif",
+  "pulse2.jpg",  
+  "pulse2.jpg",
+  "pulse3.jpg",  
+  "pulse3.jpg",
+  "pulse4.jpg",  
+  "pulse4.jpg",
+  "aula2.jpg",
+  "aula2.jpg",
+  "x.jfif",
+  "x.jfif",
+]
+
+    shuffle(images);
+    this.images = images;   
+}
+
+game.prototype.getImages = function() {
+  return this.images;
+}
 /*
  * All valid transition states are keys of the transitionStates object.
  */
@@ -120,7 +179,8 @@ game.prototype.getWord = function() {
  * @returns {boolean} returns true if the game is full (2 players), false otherwise
  */
 game.prototype.hasTwoConnectedPlayers = function() {
-  return this.gameState == "2 JOINT";
+  //return this.gameState == "2 JOINT";
+  return this.player1!=null && this.player2!=null;
 };
 
 /**
@@ -129,24 +189,36 @@ game.prototype.hasTwoConnectedPlayers = function() {
  * @returns {(string|Error)} returns "A" or "B" depending on the player added; returns an error if that isn't possible
  */
 game.prototype.addPlayer = function(p) {
-  if (this.gameState != "0 JOINT" && this.gameState != "1 JOINT") {
+  if(this.player1 == null) {
+    this.player1 = p;
+    return "Player1";
+  }    
+  else if(this.player2 == null) {
+    this.player2 = p;
+    return "Player2";
+  }
+  else
     return new Error(
-      `Invalid call to addPlayer, current state is ${this.gameState}`
+      `Already 2 players`
     );
-  }
+  // if (this.gameState != "0 JOINT" && this.gameState != "1 JOINT") {
+  //   return new Error(
+  //     `Invalid call to addPlayer, current state is ${this.gameState}`
+  //   );
+  // }
 
-  const error = this.setStatus("1 JOINT");
-  if (error instanceof Error) {
-    this.setStatus("2 JOINT");
-  }
+  // const error = this.setStatus("1 JOINT");
+  // if (error instanceof Error) {
+  //   this.setStatus("2 JOINT");
+  // }
 
-  if (this.playerA == null) {
-    this.playerA = p;
-    return "A";
-  } else {
-    this.playerB = p;
-    return "B";
-  }
+  // if (this.playerA == null) {
+  //   this.playerA = p;
+  //   return "A";
+  // } else {
+  //   this.playerB = p;
+  //   return "B";
+  // }
 };
 
 module.exports = game;

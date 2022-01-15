@@ -1,6 +1,10 @@
 // @ts-nocheck
 
 (function (exports) {
+    exports.Player1 = {
+      type: "Both",
+      data: "Player1 Connected"
+    }
     /*
      * Client to server: game is complete, the winner is ...
      */

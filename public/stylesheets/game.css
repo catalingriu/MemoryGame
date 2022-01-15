@@ -3,11 +3,12 @@
 main {
   display: grid;
   grid-template-columns: 60vw 40vw;
-  grid-template-rows: 0.5fr 0.5fr 100px;
+  grid-template-rows: 100px 100px 1fr;
   box-sizing: border-box;
   color: var(--text);
-  font-family: 'Bungee Shade', cursive;
-
+  font-size: 20px;
+  font-family: monaco, Bitstream Vera Sans Mono, monospace;
+  letter-spacing: 2px;
 }
 
 .centerXY {
@@ -28,22 +29,19 @@ main {
 
 #game {
   grid-row: 1/4;
-  background-color: var(--lightBG);
+  background-color: var(--darkBG);
   display: grid;
   grid-template-columns: repeat(6, 8vw);
   grid-template-rows: repeat(5, 17vh);
   gap: 20px;
   padding-top: 10px;
   box-sizing: border-box;
-  border-right: 5px dashed var(--lightHighlight);
+  border-right: 5px dashed var(--lightBG);
 }
 
 .letter {
-  background-color: var(--darkHighlight);
+  background-color: var(--lightBG);
   border: 5px solid white;
-  border-radius: 10px;
-  font-size: 250%;
-  padding-left: 10px;
   box-shadow: 20px 20px 10px -10px rgba(31, 31, 31, 0.5);
   display: flex;
   justify-content: center;
@@ -62,35 +60,25 @@ main {
   pointer-events: none;
 }
 
-#balloons {
+#player1 {
   background-color: var(--darkBG);
   display: grid;
   gap: 10px;
+  border-bottom: 5px dashed var(--lightBG);
 }
 
-#word {
-  background-color: var(--darkBG);
-  
-  /* adaptive font-size source: https://css-tricks.com/simplified-fluid-typography/ */
-  font-size: clamp( 32px, 4vw, 64px );
-  
-  border-bottom: 5px dashed var(--darkHighlight);
+#player2 {
+  background-color: var(--darkBG);  
+  border-bottom: 5px dashed var(--lightBG);
 }
 
 #status {
-  background-color: var(--lightHighlight);
-  font-family: monaco, Bitstream Vera Sans Mono, monospace;
-  font-size: 100%;
-  padding: 10px;
+  background-color: var(--darkBG);
+  padding: 20px;
 }
 
-.balloon {
-  border-radius: 50%;
-  border: 3px dashed var(--darkHighlight);
-  transition: opacity 2s;
-}
-
-.balloonGone {
-  transition: opacity 2s;
-  opacity: 0;
+img {
+  position: relative;
+  max-width:100%;
+  max-height:100%;
 }

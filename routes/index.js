@@ -7,7 +7,8 @@ const gameStatus = require("../statTracker");
 router.get("/", function(req, res) {
   res.render("splash.ejs", {
     gamesInitialized: gameStatus.gamesInitialized,
-    gamesCompleted: gameStatus.gamesCompleted
+    gamesCompleted: gameStatus.gamesCompleted,
+    onlinePlayers: gameStatus.onlinePlayers
   });
 });
 
