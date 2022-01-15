@@ -19,6 +19,8 @@ function GameState(visibleWordBoard, sb, socket) {
   this.socket = socket;
   this.p1Score = 0;
   this.p2Score = 0;
+  this.prevGuess = null;
+  this.prevDivID = null;
 }
 
 /**
@@ -46,14 +48,6 @@ GameState.prototype.setPlayerType = function (p) {
 };
 
 /**
- * Set the word to guess.
- * @param {string} w word to set
- */
-// GameState.prototype.setTargetWord = function (w) {
-//   this.targetWord = w;
-// };
-
-/**
  * Retrieve the word array.
  * @returns {string[]} array of letters
  */
@@ -61,18 +55,6 @@ GameState.prototype.setPlayerType = function (p) {
 //   return this.visibleWordArray;
 // };
 
-/**
- * Increase the wrong-guess count.
- */
-// GameState.prototype.incrWrongGuess = function () {
-//   this.wrongGuesses++;
-
-//   if (this.whoWon() == null) {
-//     //hide a balloon
-//     const id = "b" + this.wrongGuesses;
-//     document.getElementById(id).className += " balloonGone";
-//   }
-// };
 GameState.prototype.incrP1Score = function () {
   this.p1Score++;
 };
@@ -125,49 +107,96 @@ GameState.prototype.whoWon = function () {
 //   this.visibleWordBoard.setWord(this.targetWord);
 // };
 
-/**
- * Update the game state given the letter that was just clicked.
- * @param {string} clickedLetter
- */
-GameState.prototype.updateGame = function (clickedLetter) {
-  
+
+GameState.prototype.updateGame = function (divID, gs) {
+  //this.statusBar.setStatus(divID);
+
+  //this.makeImageUnAvailable(divID, gs);
 };
 
-/**
- * Initialize the alphabet board.
- * @param {*} gs
- */
-function AlphabetBoard(gs) {
-  //only initialize for player that should actually be able to use the board
-  this.initialize = function () {
-    const elements = document.querySelectorAll(".letter");
-    Array.from(elements).forEach(function (el) {
-      el.addEventListener("click", function singleClick(e) {
-        const clickedLetter = e.target["id"];
-        
+GameState.prototype.makeChange = function(divID, gs) {
+  this.makeImageUnAvailable(divID, gs);
+  gs.sendMessageToServer(divID, "unav");
 
-        gs.updateGame(clickedLetter);
-
-        /*
-         * every letter can only be clicked once;
-         * here we remove the event listener when a click happened
-         */
-        el.removeEventListener("click", singleClick, false);
-      });
-    });
-  };
-}
-
-/**
- * Disable the alphabet buttons.
- */
-function disableAlphabetButtons() {
-  const alphabet = document.getElementById("alphabet");
-  const letterDivs = alphabet.getElementsByTagName("div");
-  for (let i = 0; i < letterDivs.length; i++) {
-    letterDivs.item(i).className += " alphabetDisabled";
+  let image = document.getElementById(divID).childNodes[0].src;
+  if(this.prevGuess == null) {
+    this.prevGuess = image;
+    this.prevDivID = divID;
   }
+  else if(image == this.prevGuess) {
+    this.statusBar.setStatus("yeiiii");
+    if(this.playerType == "Player1")
+      this.incrP1Score();
+    else
+      this.incrP2Score();
+    gs.changeTurn(gs);
+  }
+  else {
+    this.statusBar.setStatus("reset");
+      setTimeout(() => {
+      gs.makeImageAvailable(divID, gs);
+      gs.sendMessageToServer(divID, "av");
+      gs.makeImageAvailable(gs.prevDivID, gs);
+      gs.sendMessageToServer(gs.prevDivID, "av");
+      gs.changeTurn(gs);
+      }, 1000);
+    
+    }
 }
+
+GameState.prototype.changeTurn = (gs) => {
+  gs.prevGuess = null;
+  gs.prevDivID = null;
+}
+
+GameState.prototype.showImage = (divID) => {
+  let image = document.getElementById(divID).childNodes[0];
+  image.style.visibility = "visible";
+};
+
+GameState.prototype.hideImage = (divID) => {
+  let image = document.getElementById(divID).childNodes[0];
+  image.style.visibility = "hidden";
+};
+
+GameState.prototype.makeImageUnAvailable = (divID, gs) => {
+  gs.showImage(divID);
+  let div = document.getElementById(divID);
+  div.style.pointerEvents = "none";
+};
+
+GameState.prototype.makeImageAvailable = (divID, gs) => {
+  gs.hideImage(divID);
+  let div = document.getElementById(divID);
+  div.style.pointerEvents = "auto";
+  eventFunc(div, gs);
+};
+
+GameState.prototype.sendMessageToServer = function(divID, state) {
+  let mess = {
+    type: "Guess",
+    state: state,
+    data: divID
+  }
+  this.socket.send(JSON.stringify(mess));
+}
+
+GameState.prototype.initializeBoard = function (gs) {
+  const elements = document.querySelectorAll(".letter");
+  Array.from(elements).forEach((el) => eventFunc(el, gs));
+};
+
+const eventFunc = (el, gs) => {
+  el.addEventListener("click", function singleClick(e) {
+    const clickedLetter = e.target["id"];
+
+    gs.makeChange(clickedLetter, gs);
+
+    el.removeEventListener("click", singleClick, false);
+  });
+};
+
+
 
 //set everything up, including the WebSocket
 (function setup() {
@@ -190,94 +219,29 @@ function disableAlphabetButtons() {
   // @ts-ignore
 
   const gs = new GameState(null, sb, socket);
-  const ab = new AlphabetBoard(gs);
-
+  gs.initializeBoard(gs);
+ // ab.initialize();
   socket.onmessage = function (event) {
     let incomingMsg = JSON.parse(event.data);
-    sb.setStatus(JSON.stringify(incomingMsg));
 
     if(incomingMsg.type == "setImages") {  
       gs.alphabet.setImages(incomingMsg.images);
     }
 
-    //set player type
-    if (incomingMsg.type == Messages.T_PLAYER_TYPE) {
-      gs.setPlayerType(incomingMsg.data); //should be "A" or "B"
-
-      //if player type is A, (1) pick a word, and (2) sent it to the server
-      if (gs.getPlayerType() == "A") {
-        disableAlphabetButtons();
-
-        sb.setStatus(Status["player1Intro"]);
-        let validWord = -1;
-        let promptString = Status["prompt"];
-        let res = null;
-
-        while (validWord < 0) {
-          res = prompt(promptString);
-
-          if (res == null) {
-            promptString = Status["prompt"];
-          } else {
-            res = res.toUpperCase(); //game is played with uppercase letters
-
-            if (
-              res.length < Setup.MIN_WORD_LENGTH ||
-              res.length > Setup.MAX_WORD_LENGTH
-            ) {
-              promptString = Status["promptAgainLength"];
-            } else if (/^[a-zA-Z]+$/.test(res) == false) {
-              promptString = Status["promptChars"];
-            }
-            //dictionary has only lowercase entries
-            //TODO: convert the dictionary to uppercase to avoid this extra string conversion cost
-            else if (
-              Object.prototype.hasOwnProperty.call(
-                // @ts-ignore
-                englishDict,
-                res.toLocaleLowerCase()
-              ) == false
-            ) {
-              promptString = Status["promptEnglish"];
-            } else {
-              validWord = 1;
-            }
-          }
-        }
-        sb.setStatus(Status["chosen"] + res);
-        gs.setTargetWord(res);
-        gs.initializeVisibleWordArray(); // initialize the word array, now that we have the word
-        vw.setWord(gs.getVisibleWordArray());
-
-        let outgoingMsg = Messages.O_TARGET_WORD;
-        outgoingMsg.data = res;
-        socket.send(JSON.stringify(outgoingMsg));
-      } else {
-        sb.setStatus(Status["player2IntroNoTargetYet"]);
-      }
+    if(incomingMsg.type == "setPlayerType") {
+      gs.setPlayerType(incomingMsg.data);
     }
 
-    //Player B: wait for target word and then start guessing ...
-    if (
-      incomingMsg.type == Messages.T_TARGET_WORD &&
-      gs.getPlayerType() == "B"
-    ) {
-      gs.setTargetWord(incomingMsg.data);
-
-      sb.setStatus(Status["player2Intro"]);
-      gs.initializeVisibleWordArray(); // initialize the word array, now that we have the word
-      ab.initialize();
-      vw.setWord(gs.getVisibleWordArray());
+    if(incomingMsg.type == "Guess") {
+      if(incomingMsg.state == "unav")
+        gs.makeImageUnAvailable(incomingMsg.data, gs);
+      else
+        gs.makeImageAvailable(incomingMsg.data, gs);
+      //gs.updateGame(incomingMsg.data);
     }
 
-    //Player A: wait for guesses and update the board ...
-    if (
-      incomingMsg.type == Messages.T_MAKE_A_GUESS &&
-      gs.getPlayerType() == "A"
-    ) {
-      sb.setStatus(Status["guessed"] + incomingMsg.data);
-      gs.updateGame(incomingMsg.data);
-    }
+    
+
   };
 
   socket.onopen = function () {

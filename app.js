@@ -51,16 +51,28 @@ wss.on("connection", function (ws) {
   }
 
   con.on("message", function incoming(message) {
-    const oMsg = JSON.parse(message.toString());
+    const oMsg = JSON.parse(message);
 
     const gameObj = websockets[con["id"]];
-    const isPlayerA = gameObj.playerA == con ? true : false;
+    const isPlayer1 = gameObj.player1 == con ? true : false;
 
-    if (isPlayerA) {
+    console.log(oMsg);
+
+    if(oMsg.type === "Guess") {
+        if(isPlayer1) {
+          gameObj.player2.send(JSON.stringify(oMsg));
+          console.log("Sent")
+        }
+        else
+          gameObj.player1.send(JSON.stringify(oMsg));
+    }
+
+    if (isPlayer1) {
       /*
        * player A cannot do a lot, just send the target word;
        * if player B is already available, send message to B
        */
+      
       if (oMsg.type == messages.T_TARGET_WORD) {
         gameObj.setWord(oMsg.data);
 
@@ -103,8 +115,7 @@ wss.on("connection", function (ws) {
        */
       const gameObj = websockets[con["id"]];
 
-      if (gameObj.isValidTransition(gameObj.gameState, "ABORTED")) {
-        gameObj.setStatus("ABORTED");
+      if (gameObj.player1 != null  || gameObj.player2 != null) {
         gameStatus.gamesAborted++;
 
         /*
@@ -112,17 +123,17 @@ wss.on("connection", function (ws) {
          * close it
          */
         try {
-          gameObj.playerA.close();
-          gameObj.playerA = null;
+          gameObj.player1.close();
+          gameObj.player1 = null;
         } catch (e) {
-          console.log("Player A closing: " + e);
+          console.log("Player 1 closing: " + e);
         }
 
         try {
-          gameObj.playerB.close();
-          gameObj.playerB = null;
+          gameObj.player2.close();
+          gameObj.player2 = null;
         } catch (e) {
-          console.log("Player B closing: " + e);
+          console.log("Player 2 closing: " + e);
         }
       }
     }
@@ -131,46 +142,3 @@ wss.on("connection", function (ws) {
 });
 
 server.listen(port);
-
-
-/*var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
-var app = express();
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
-module.exports = app;*/
