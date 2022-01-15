@@ -3,7 +3,7 @@
 main {
   display: grid;
   grid-template-columns: 60vw 40vw;
-  grid-template-rows: 100px 100px 1fr;
+  grid-template-rows: 100px 100px 100px 1fr;
   box-sizing: border-box;
   color: var(--text);
   font-size: 20px;
@@ -17,7 +17,8 @@ main {
      easily 
   */
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
+  padding-left: 20px;
   align-items: center;
   flex-basis: 100%;
 }
@@ -28,7 +29,7 @@ main {
 }
 
 #game {
-  grid-row: 1/4;
+  grid-row: 1/5;
   background-color: var(--darkBG);
   display: grid;
   grid-template-columns: repeat(6, 8vw);
@@ -60,22 +61,23 @@ main {
   pointer-events: none;
 }
 
-#player1 {
-  background-color: var(--darkBG);
-  display: grid;
-  gap: 10px;
+
+
+#player1, #player2, #gameId {
   border-bottom: 5px dashed var(--lightBG);
 }
 
-#player2 {
-  background-color: var(--darkBG);  
-  border-bottom: 5px dashed var(--lightBG);
+
+#p1Score, #p2Score, #gameID{
+  display: inline-block;
 }
 
-#status {
+.messages {
   background-color: var(--darkBG);
   padding: 20px;
+  display: inline-block;
 }
+
 
 img {
   position: relative;

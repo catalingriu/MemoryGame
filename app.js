@@ -7,6 +7,7 @@ const messages = require("./public/javascripts/messages");
 
 const gameStatus = require("./statTracker");
 const Game = require("./game");
+const game = require("./game");
 
 const port = process.argv[2];
 const app = express();
@@ -30,6 +31,13 @@ wss.on("connection", function (ws) {
   const con = ws;
   con["id"] = connectionID++;
   const playerNumber = currentGame.addPlayer(con);
+
+  const mess = {
+    type: "setPlayerType",
+    data: playerNumber
+  }
+  con.send(JSON.stringify(mess));
+  con.send(JSON.stringify({type: "setGameID", data: gameStatus.gamesInitialized}));
 
   gameStatus.onlinePlayers++;
   websockets[con["id"]] = currentGame;
@@ -67,37 +75,11 @@ wss.on("connection", function (ws) {
           gameObj.player1.send(JSON.stringify(oMsg));
     }
 
-    if (isPlayer1) {
-      /*
-       * player A cannot do a lot, just send the target word;
-       * if player B is already available, send message to B
-       */
-      
-      if (oMsg.type == messages.T_TARGET_WORD) {
-        gameObj.setWord(oMsg.data);
-
-        if (gameObj.hasTwoConnectedPlayers()) {
-          gameObj.playerB.send(message);
-        }
-      }
-    } else {
-      /*
-       * player B can make a guess;
-       * this guess is forwarded to A
-       */
-      if (oMsg.type == messages.T_MAKE_A_GUESS) {
-        gameObj.playerA.send(message);
-        gameObj.setStatus("CHAR GUESSED");
-      }
-
-      /*
-       * player B can state who won/lost
-       */
-      if (oMsg.type == messages.T_GAME_WON_BY) {
-        gameObj.setStatus(oMsg.data);
-        //game was won by somebody, update statistics
-        gameStatus.gamesCompleted++;
-      }
+    if(oMsg.type == "updateScore") {
+      if(isPlayer1)
+        gameObj.player2.send(JSON.stringify(oMsg));
+      else
+        gameObj.player1.send(JSON.stringify(oMsg));
     }
   });
 

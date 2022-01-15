@@ -2,6 +2,7 @@
 //@ts-check
 
 
+
 /**
  * Game state object
  * @param {*} visibleWordBoard
@@ -56,12 +57,33 @@ GameState.prototype.setPlayerType = function (p) {
 // };
 
 GameState.prototype.incrP1Score = function () {
-  this.p1Score++;
+  this.setScore(this.playerType, this.p1Score+1)
+
+  this.socket.send(JSON.stringify({type: "updateScore", data: this.p1Score+""}));
 };
 
 GameState.prototype.incrP2Score = function () {
-  this.p2Score++;
+  this.setScore(this.playerType, this.p2Score+1)
+
+  this.socket.send(JSON.stringify({type: "updateScore", data: this.p2Score+""}));
 };
+
+GameState.prototype.setScore = function (playerType, score) {
+  if(playerType == "Player1") {
+    this.p1Score = score;
+    let div = document.getElementById("p1Score");
+    div.innerHTML=this.p1Score+"";
+  }
+  else {
+    this.p2Score = score;
+    let div = document.getElementById("p2Score");
+    div.innerHTML=this.p2Score+"";
+  }
+
+ 
+};
+
+
 
 /**
  * Check if anyone one won.
@@ -240,6 +262,16 @@ const eventFunc = (el, gs) => {
       //gs.updateGame(incomingMsg.data);
     }
 
+    if(incomingMsg.type == "updateScore") {
+      if(gs.playerType == "Player1")
+        gs.setScore("Player2", incomingMsg.data);
+      else
+        gs.setScore("Player1", incomingMsg.data);
+    }
+
+    if(incomingMsg.type == "setGameID") {
+      document.getElementById("gameID").innerHTML = incomingMsg.data;
+    }
     
 
   };

@@ -19,7 +19,7 @@ main {
 }
 
 a {
-  background-color: var(--lightBG);
+  background-color: var(--buttonColor);
   color: var(--text);
   text-decoration: underline overline;
 }
@@ -48,3 +48,4 @@ a:hover {
     z-index: 100;
   }
 }
+
