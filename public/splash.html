@@ -11,18 +11,11 @@
                        
         <h1>MemoryGame</h1>
         <h3>
-            <%= onlinePlayers %>
-            in game players
+            0 in game players
         </h3>
-        <h3><%= gamesInitialized %> 
-            <%if (gamesInitialized != 1) { %>
-                games
-            <% } else { %>
-                game
-            <% } %>
-            initialized, 
-            <%= gamesCompleted %> 
-            completed
+        <h3> 
+            0 games initialized, 
+            0 completed
         </h3>
       
           <form action="/play" method="get">

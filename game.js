@@ -1,7 +1,6 @@
 //@ts-check
 
 const websocket = require("ws");
-const { report } = require("./routes");
 
 function shuffle(array) {
   let currentIndex = array.length,  randomIndex;
@@ -29,7 +28,6 @@ const game = function(gameID) {
   this.player1 = null;
   this.player2 = null;
   this.id = gameID;
-  this.gameState = "0 JOINT"; //"A" means A won, "B" means B won, "ABORTED" means the game was aborted
   this.images = null;
   this.turn = null;
   this.winner = null;
@@ -75,31 +73,6 @@ game.prototype.shuffleImages = function() {
 game.prototype.getImages = function() {
   return this.images;
 }
-
-
-/**
- * Update the word to guess in this game.
- * @param {string} w word to guess
- * @returns 
- */
-game.prototype.setWord = function(w) {
-  //two possible options for the current game state:
-  //1 JOINT, 2 JOINT
-  if (this.gameState != "1 JOINT" && this.gameState != "2 JOINT") {
-    return new Error(
-      `Trying to set word, but game status is ${this.gameState}`
-    );
-  }
-  this.wordToGuess = w;
-};
-
-/**
- * Retrieves the word to guess.
- * @returns {string} the word to guess
- */
-game.prototype.getWord = function() {
-  return this.wordToGuess;
-};
 
 /**
  * Checks whether the game is full.

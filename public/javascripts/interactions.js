@@ -1,21 +1,7 @@
-/* eslint-disable no-undef */
 //@ts-check
 
-
-
-/**
- * Game state object
- * @param {*} visibleWordBoard
- * @param {*} sb
- * @param {*} socket
- */
-function GameState(visibleWordBoard, sb, socket) {
+function GameState(sb, socket) {
   this.playerType = null;
-  //this.visibleWordArray = null;
-  this.alphabet = new Alphabet();
-  this.alphabet.initialize();
-  this.visibleWordBoard = visibleWordBoard;
-  //this.targetWord = null;
   this.statusBar = sb;
   this.socket = socket;
   this.p1Score = 0;
@@ -24,6 +10,16 @@ function GameState(visibleWordBoard, sb, socket) {
   this.prevDivID = null;
   this.myTurn = false;
 }
+
+GameState.prototype.setImages = function(images) {
+  for(let i=1; i <= 30; i++) {
+    let image = document.createElement("img");
+    image.src = "images/" + images[i-1];
+
+    let div = document.getElementById(""+i);
+    div.appendChild(image);
+   }
+};
 
 GameState.prototype.getPlayerType = function () {
   return this.playerType;
@@ -63,11 +59,12 @@ GameState.prototype.setScore = function (playerType, score) {
     let winner = ((this.p1Score > this.p2Score)?"Player1" : "Player2");
     this.statusBar.append("Game Over! " + winner + " won!");
 
+    //only the winner alerts the server
     if(winner === playerType) 
       this.socket.send(JSON.stringify({type: "gameCompleted", data: playerType}));
   }
   
-  //only the winner alerts the server
+  
   
 
 };
@@ -200,25 +197,12 @@ const eventFunc = (el, gs) => {
 
 //set everything up, including the WebSocket
 (function setup() {
-  const socket = new WebSocket(Setup.WEB_SOCKET_URL);
+  const socket = new WebSocket("ws://localhost:3000");
 
-  /*
-   * initialize all UI elements of the game:
-   * - visible word board (i.e. place where the hidden/unhidden word is shown)
-   * - status bar
-   * - alphabet board
-   *
-   * the GameState object coordinates everything
-   */
-
-  // @ts-ignore
-  // @ts-ignore
   const sb = new StatusBar();
 
-  //no object, just a function
-  // @ts-ignore
 
-  const gs = new GameState(null, sb, socket);
+  const gs = new GameState(sb, socket);
   gs.initializeBoard(gs);
   gs.disableChanges();
   document.getElementById("Player1Turn").style.visibility = "hidden";
@@ -229,7 +213,7 @@ const eventFunc = (el, gs) => {
     let incomingMsg = JSON.parse(event.data);
 
     if(incomingMsg.type == "setImages") {  
-      gs.alphabet.setImages(incomingMsg.images);
+      gs.setImages(incomingMsg.images);
       gs.statusBar.append("Game started!");
       if(gs.playerType === "Player1") 
         gs.enableChanges();
@@ -270,6 +254,8 @@ const eventFunc = (el, gs) => {
       if(!gs.myTurn) {
         gs.myTurn = true;
         gs.enableChanges();
+
+        //set # (turn)
         document.getElementById(gs.playerType+"Turn").style.visibility = "visible";
         if(gs.playerType === "Player1")
           document.getElementById("Player2Turn").style.visibility = "hidden";
@@ -281,17 +267,12 @@ const eventFunc = (el, gs) => {
 
   };
 
-  socket.onopen = function () {
-    socket.send("{}");
-  };
-
   //server sends a close event only if the game was aborted from some side
   socket.onclose = function () {
     if (gs.whoWon() == null) {
-      sb.append(Status["aborted"]);
+      sb.append("Your gaming partner is no longer available, game aborted.");
       gs.disableChanges();
     }
   };
 
-  socket.onerror = function () {};
 })(); //execute immediately

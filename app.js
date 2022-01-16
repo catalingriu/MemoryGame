@@ -3,7 +3,6 @@ const http = require("http");
 const websocket  = require("ws");
 
 var indexRouter = require('./routes/index');
-const messages = require("./public/javascripts/messages");
 
 const gameStatus = require("./statTracker");
 const Game = require("./game");

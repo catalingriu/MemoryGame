@@ -1,7 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-
-  
   /**
    * Object representing the status bar.
    */
