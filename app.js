@@ -7,7 +7,6 @@ const messages = require("./public/javascripts/messages");
 
 const gameStatus = require("./statTracker");
 const Game = require("./game");
-const game = require("./game");
 
 const port = process.argv[2];
 const app = express();
@@ -62,14 +61,13 @@ wss.on("connection", function (ws) {
     const oMsg = JSON.parse(message);
 
     const gameObj = websockets[con["id"]];
-    const isPlayer1 = gameObj.player1 == con ? true : false;
+    const isPlayer1 = gameObj.player1 === con ? true : false;
 
     console.log(oMsg);
 
     if(oMsg.type === "Guess") {
         if(isPlayer1) {
           gameObj.player2.send(JSON.stringify(oMsg));
-          console.log("Sent")
         }
         else
           gameObj.player1.send(JSON.stringify(oMsg));
@@ -81,7 +79,22 @@ wss.on("connection", function (ws) {
       else
         gameObj.player1.send(JSON.stringify(oMsg));
     }
+
+    if(oMsg.type == "changeTurn") {
+      if(oMsg.for === "Player2")
+        gameObj.player2.send(JSON.stringify(oMsg));
+      else
+        gameObj.player1.send(JSON.stringify(oMsg));
+    }
+
+    if(oMsg.type === "gameCompleted") {
+        gameObj.winner = oMsg.data;
+        gameStatus.gamesCompleted++;
+    }
+
   });
+
+  
 
   con.on("close", function(code) {
     /*

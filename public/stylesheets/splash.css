@@ -22,12 +22,19 @@ button {
   border: none;
   padding: 30px;
   z-index: 1;
+  animation: blinker 1s linear infinite;
 }
 
 button:hover {
   background-color: var(--buttonHover);
   transition: background-color 2s ease;
   text-decoration: underline overline;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0.5;
+  }
 }
 
 img {

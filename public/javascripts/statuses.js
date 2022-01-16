@@ -13,7 +13,7 @@ const Status = {
   player2Intro: `Player 2 connected. Game started!`,
   guessedPlayer1: "Player 1 guessed a pair!",
   guessedPlayer2: "Player 2 guessed a pair!",
-  aborted: "Your gaming partner is no longer available, game aborted. <a href='/play'>Play again!</a>"
+  aborted: "Your gaming partner is no longer available, game aborted."
 };
 
 

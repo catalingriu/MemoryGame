@@ -9,5 +9,9 @@
     this.setStatus = function(status) {
       document.getElementById("status").innerHTML = status;
     };
+
+    this.append = (status) => {
+      document.getElementById("status").innerText += "\n "+status;
+    };
   }
   
